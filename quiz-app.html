@@ -1,0 +1,2137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OCI Exam Quiz</title>
+  <!-- Stili CSS per il layout, colori e formattazione del quiz -->
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    #quiz-container {
+      background: #ffffff;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      width: 90%;
+      max-width: 800px;
+      text-align: left;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 2rem;
+      color: #333;
+    }
+    #progress-bar {
+      height: 8px;
+      background: #00b894;
+      border-radius: 5px;
+      margin-bottom: 1rem;
+      width: 0%;
+      transition: width 0.4s;
+    }
+    #score {
+      text-align: center;
+      font-size: 1rem;
+      margin-bottom: 20px;
+      background: #f8f9fa;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #dee2e6;
+    }
+    #score span.correct {
+      color: green;
+      font-weight: bold;
+    }
+    #score span.incorrect {
+      color: red;
+      font-weight: bold;
+    }
+    .question {
+      font-weight: bold;
+      margin-bottom: 15px;
+      font-size: 1.2rem;
+    }
+    .option {
+      margin: 10px 0;
+      font-size: 1.1rem;
+    }
+    .correct {
+      background-color: #e6ffe6;
+      color: green;
+      font-weight: bold;
+    }
+    .incorrect {
+      background-color: #ffe6e6;
+      color: red;
+      font-weight: bold;
+    }
+    #feedback {
+      margin-top: 20px;
+      font-weight: bold;
+      text-align: center;
+      font-size: 1.1rem;
+    }
+    .button-container {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+    button {
+      padding: 12px 24px;
+      font-size: 1rem;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      background-color: #0984e3;
+      color: white;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    button:hover {
+      background-color: #74b9ff;
+      transform: translateY(-1px);
+    }
+      @media (prefers-color-scheme: dark) {
+      body {
+        background: linear-gradient(135deg, #2c3e50, #4ca1af);
+        color: #ecf0f1;
+      }
+      #quiz-container {
+        background: #1e272e;
+        color: #ecf0f1;
+      }
+      #score {
+        background: #2f3640;
+        border-color: #57606f;
+      }
+      button {
+        background-color: #3498db;
+        color: #fff;
+      }
+      button:hover {
+        background-color: #2980b9;
+      }
+    }
+
+    .correct {
+      animation: pulse-green 0.5s ease;
+    }
+
+    .incorrect {
+      animation: pulse-red 0.5s ease;
+    }
+
+    @keyframes pulse-green {
+      0% { background-color: #e6ffe6; }
+      50% { background-color: #a3ffb0; }
+      100% { background-color: #e6ffe6; }
+    }
+
+    @keyframes pulse-red {
+      0% { background-color: #ffe6e6; }
+      50% { background-color: #ffb3b3; }
+      100% { background-color: #ffe6e6; }
+    }
+  </style>
+</head>
+<body>
+  <div id="quiz-container">
+    <h1>OCI Exam Quiz</h1>
+    <div id="progress-bar"></div>
+    <div id="score"></div>
+    <div class="question" id="question"></div>
+    <div id="options"></div>
+    <div id="feedback"></div>
+    <div class="button-container">
+      <button id="nextBtn" onclick="nextQuestion()">Next Question</button>
+      <button onclick="checkAnswer()">Check Answer</button>
+    </div>
+  </div>
+
+  <script>
+    function shuffleArray(array) {
+      return array.map(value => ({ value, sort: Math.random() }))
+                  .sort((a, b) => a.sort - b.sort)
+                  .map(({ value }) => value);
+    }
+
+    const questions = [
+    {
+      "question": "Which of the following step is performed to enable a metric group in OCI Application Performance Monitoring?",
+      "options": [
+        "Create a span filter and push metric data to the OCI monitoring service\n",
+        "Create a span filter in the APM domain and create a metric group\n",
+        "Run predefined queries in the Trace Explorer and create a metric group\n",
+        "Specify the metrics that the filter can be used against and create a span filter\n"
+      ],
+      "correct": 2
+    },
+    {
+      "question": "Which of the following TWO are Action types that are available while creating a Rule in OCI Events service?",
+      "options": [
+        "Monitoring\n",
+        "Connector Hub\n",
+        "Functions\n",
+        "Streaming\n"
+      ],
+      "correct": [
+        3,
+        4
+      ]
+    },
+    {
+      "question": "You are part of an organization using Oracle Cloud Infrastructure. The developer team periodically uploads configuration files into an Object Storage bucket for their development needs.",
+      "options": [
+        "Your task is to automatically process these files into a specific format as soon as they are uploaded into the bucket.\n",
+        "Create an OCI Events Rule with the service name as Object Storage and the Event Type set to \u201cApplication \u2013 Create\u201d and add an action to stream the event details to OCI Streaming.\n",
+        "Create an OCI Events Rule with the service name as Object Storage and the Event Type set to \u201cSubscription \u2013 Create\u201d and add an action to send an OCI Notification to the developer team.\n",
+        "Create an OCI Events Rule with the service name as Object Storage and the Event Type set to \u201cObject \u2013 Create\u201d and add an action to trigger an OCI Function to process the files.\n"
+      ],
+      "correct": 4
+    },
+    {
+      "question": "You are a Solutions Architect for an Oracle Cloud Infrastructure (OCI) tenancy, and the \"Ops\" group has requested the ability to view and retrieve monitoring metrics. However, the access should be limited only to Block Storage metrics.\n Which policy statement would you define to grant this access?\n",
+      "options": [
+        "Restricting monitoring access only to Block storage metrics is not possible.\n",
+        "Allow group Ops to read metrics in tenancy where target.metrics.namespace='oci_blockstore'\n",
+        "Allow group Ops to read blockstore-metrics in tenancy\n",
+        "Allow group Ops to manage metrics in tenancy where target.metrics.monitoring='oci_blockstore'\n"
+      ],
+      "correct": 2
+    },
+    {
+      "question": "What is the primary purpose of the OCI Management Agent in Oracle Cloud Infrastructure (OCI)?",
+      "options": [
+        "Allows grouping of resources with centralized management\n",
+        "Analyze the cost and utilization of OCI resources\n",
+        "Trigger actions based on state changes in OCI resources\n",
+        "Facilitate data collection between OCI and other targets\n"
+      ],
+      "correct": 4
+    },
+    {
+      "question": "Which of the following is an example of a Log Source in OCI Logging Analytics?",
+      "options": [
+        "JSON, XML, CSV files\n",
+        "Long, Integer, String fields\n",
+        "/var/log/messages\n",
+        "Windows Events, Syslog Listener, and Database SQL parsers\n"
+      ],
+      "correct": 3
+    },
+    {
+      "question": "You are managing an application in Oracle Cloud Infrastructure and have configured an Alarm Definition in the OCI Monitoring service to send notifications via email when CPU utilization exceeds 80%. The alarm is set to resend notifications at specified intervals if it remains in the firing state. A team member subscribed to the Notifications Topic complains that they received the initial email notification but did not receive additional notifications while the alarm continued to remain in the firing state. What could be the reason for this issue?",
+      "options": [
+        "Repeat notification was not enabled while creating the Alarm.\n",
+        "OCI Monitoring service can send only one notification per Alarm Definition when the alarm condition is met.\n",
+        "Resending notifications depends on the total metric streams returned from the query.\n",
+        "Trigger Condition was not configured while defining the Alarm.\n"
+      ],
+      "correct": 1
+    },
+    {
+      "question": "You are a member of the Cloud Security Operations in an organization with thousands of users accessing Oracle Cloud Infrastructure. A configuration error was reported, and it appears to have been caused by an unknown user action. You are tasked with identifying:\nAll users who were active in the last six hours.\nAny REST API calls they executed during that time.\nWhich OCI feature should you use to perform this investigation?",
+      "options": [
+        "Audit Analysis Dashboard\n",
+        "ObjectCollectionRule\n",
+        "OCI Resource Manager\n",
+        "OCI Cloud Guard\n"
+      ],
+      "correct": 1
+    },
+    {
+      "question": "You are a cloud administrator responsible for monitoring a hybrid cloud environment.\nWhich TWO of the following represent deployment models supported by OCI Stack Monitoring?",
+      "options": [
+        "Resources running on a Management gateway\n",
+        "Resources running on OCI Compute Instances\n",
+        "Resources running within on-premises environments\n",
+        "Resources running on a network appliance\n"
+      ],
+      "correct": [
+        2,
+        3
+      ]
+    },
+    {
+      "question": "You are a cloud administrator tasked with setting up continuous and automatic log ingestion from an OCI Compute instance into OCI Logging Analytics. Which method is recommended to achieve this requirement?",
+      "options": [
+        "Use OCI Events to trigger log ingestion\n",
+        "Utilize the LogEvents API to push logs to OCI Logging Analytics\n",
+        "Configure the OCI Management Agent on the Compute instance to ingest logs\n",
+        "Configure a Service Connector to transfer logs into OCI Logging Analytics\n"
+      ],
+      "correct": 3
+    },
+    {
+      "question": "Your team manages several workload instances in an on-premises environment. There is a requirement to archive Info-level logging data generated by these instances into OCI Object Storage for long-term retention.Which TWO features of OCI Logging can help you meet this requirement?",
+      "options": [
+        "Agent Configuration\n",
+        "Grouping function\n",
+        "IAM policy\n",
+        "Connector Hub\n"
+      ],
+      "correct": [
+        1,
+        4
+      ]
+    },
+    {
+      "question": "Which of these visualizations is generally helpful for understanding the distribution of a field\u2019s values in OCI Logging Analytics?\n(For example: Distribution of the number of HTTP error codes)",
+      "options": [
+        "Cluster\n",
+        "Tile (single number)\n",
+        "Table\n",
+        "Pie chart\n"
+      ],
+      "correct": 4
+    },
+    {
+      "question": "Which are the TWO grouping functions available in OCI Monitoring service while using Monitoring Query Language expressions?",
+      "options": [
+        "GroupTo\n",
+        "GroupBy()\n",
+        "Grouping()\n",
+        "Group()\n"
+      ],
+      "correct": [
+        2,
+        3
+      ]
+    },
+    {
+      "question": "Why do users create custom Dashboards in OCI Logging Analytics?",
+      "options": [
+        "To manage alarm and notification rules for log data\n",
+        "To provide log data and specific metrics at a glance\n",
+        "To use log data to generate insights with machine learning\n"
+      ],
+      "correct": 2
+    },
+    {
+      "question": "You are monitoring the metric \u201cDiskIOPsWritten\u201d for 10 compute instances using the OCI Monitoring service.\nYou need to filter the graph to show metrics only for instances that use the \u201cVM.Standard.E4.Flex\u201d shape and are running in the AD-1 availability domain.\nWhich feature of OCI Monitoring can be used to achieve this?",
+      "options": [
+        "Choose the option \u201cAggregate metric streams\u201d by shape and availability domain\n",
+        "Choose the grouping function to group by shape and availability domain\n",
+        "Choose the data table and search for instances by shape and availability domain\n",
+        "Choose dimensions for shape and availability domain\n"
+      ],
+      "correct": 4
+    },
+    {
+      "question": "Which is a SQL-like query language tailored to request distributed tracing data in OCI Application Performance Monitoring (APM)?",
+      "options": [
+        "Span\n",
+        "Trace Explorer query\n",
+        "Thread snapshot\n",
+        "APM GeoMap\n"
+      ],
+      "correct": 2
+    },
+    {
+      "question": "You are using OCI Events and OCI Notifications to monitor the creation of resources in an OCI environment.\nSpecifically, you want to monitor the creation of Load Balancers and Compute Instances.\nWhich pair of Event Types correctly match these Events?",
+      "options": [
+        "Event Type \"com.oraclecloud.networking.createloadbalancer\" to notify when the Load Balancer is created. Event Type \"com.oraclecloud.computeapi.launchinstance.begin\" to notify when the Instance creation is complete.\n",
+        "Event Type \"com.oraclecloud.networking.updateloadbalancer\" to notify when the Load Balancer is created. Event Type \"com.oraclecloud.computeapi.launchinstance.begin\" to notify when the Instance creation is complete.\n",
+        "Event Type \"com.oraclecloud.networking.updateloadbalancer\" to notify when the Load Balancer is created. Event Type \"com.oraclecloud.computeapi.launchinstance.end\" to notify when the Instance creation is complete.\n",
+        "Event Type \"com.oraclecloud.networking.createloadbalancer\" to notify when the Load Balancer is created. Event Type \"com.oraclecloud.computeapi.launchinstance.end\" to notify when the Instance creation is complete.\n"
+      ],
+      "correct": 4
+    },
+    {
+      "question": "You have created an Alarm Definition in OCI Monitoring, and the current status of alarm is OK.\nWhen the alarm condition is met and the alarm is triggered, which of the following becomes a valid alarm state?",
+      "options": [
+        "Triggered\n",
+        "Critical\n",
+        "Firing\n"
+      ],
+      "correct": 3
+    },
+    {
+      "question": "You are setting up OCI Stack Monitoring to track the health and performance of your organization\u2019s resources.\nWhich of the following resource can be monitored using OCI Stack Monitoring?",
+      "options": [
+        "Object Storage\n",
+        "External Database\n",
+        "Virtual Cloud Network (VCN)\n"
+      ],
+      "correct": 2
+    },
+    {
+      "question": "In OCI Connector Hub, which of the following is a valid source-target pair configuration?",
+      "options": [
+        "OCI Events (source) to OCI Logging Analytics (target)\n",
+        "OCI Logging Analytics (source) to OCI Logging (target)\n",
+        "OCI Logging (source) to OCI Object Storage (target)\n",
+        "OCI Monitoring (source) to OCI Logging (target)\n"
+      ],
+      "correct": 3
+    },
+    {
+      "question": "Which of the following are use cases of the OCI Events service? Select TWO",
+      "options": [
+        "Perform cleanup tasks when an OCI resource is terminated.\n",
+        "Events is a configuration management service used for deploying, configuring, and managing servers.\n",
+        "Migrate events generated by OCI resources from Source to Target services.\n",
+        "Process files when they are uploaded in an Object Storage bucket.\n"
+      ],
+      "correct": [
+        1,
+        4
+      ]
+    },
+    {
+      "question": "You are monitoring a multi-tier cloud environment using OCI Logging Analytics.\nDue to the large volume of log data being ingested, it has become challenging to focus on the most relevant information for analysis and troubleshooting.\nWhich TWO methods could effectively reduce noise and improve log analysis efficiency?",
+      "options": [
+        "Choose a window from time range menu\n",
+        "Create Scheduled Reports to summarize all ingested log data daily\n",
+        "Use specific keywords in the query\n",
+        "Increase the log retention period to archive logs\n"
+      ],
+      "correct": [
+        1,
+        3
+      ]
+    },
+    {
+      "question": "In OCI Logging Analytics, which factor determines the Parsers used to process logs collected from OCI services?",
+      "options": [
+        "Fields\n",
+        "Log Group\n",
+        "Compartment\n",
+        "Entity Type\n"
+      ],
+      "correct": 4
+    },
+    {
+      "question": "In OCI Logging Analytics, which of the following concept represents a resource such as a Compute instance or Database, that produces log data?",
+      "options": [
+        "Log Source\n",
+        "Entity\n",
+        "Parser\n",
+        "Link\n"
+      ],
+      "correct": 2
+    },
+    {
+      "question": "Which of the following are considered the foundational pillars of Observability in modern cloud environments such as OCI?",
+      "options": [
+        "Logs, Metrics, and Traces\n",
+        "Log data, Query language, Dashboard widgets\n",
+        "Compute, Storage, and Network\n"
+      ],
+      "correct": 1
+    },
+    {
+      "question": "In OCI Logging Analytics, how can a user start collecting logs for a specific Entity?",
+      "options": [
+        "By enabling Tracing for the Entity\n",
+        "By configuring an association between the Log Source and the Entity\n",
+        "By assigning the Entity to a Log Group\n",
+        "By creating a Parser for the Entity\n"
+      ],
+      "correct": 2
+    },
+    {
+      "question": "You are monitoring the memory utilization of a group of compute instances in OCI Monitoring. While analyzing the metric data, you want to define the specific duration of time (for example: 5 minutes or 10 minutes) over which the metric data points are aggregated to produce the results.\nWhich component of OCI Monitoring allows you to set this duration for aggregation?",
+      "options": [
+        "Metric Namespace\n",
+        "Interval\n",
+        "Dimension\n",
+        "Resolution\n"
+      ],
+      "correct": 2
+    },
+    {
+      "question": "Which TWO statements are valid for a log group in OCI Logging Analytics?",
+      "options": [
+        "Log groups are logical collections of log records\n",
+        "Log groups are created automatically\n",
+        "Log groups are used to partition logs to improve search performance\n",
+        "Log groups are used to control access at the compartment level\n"
+      ],
+      "correct": [
+        1,
+        4
+      ]
+    },
+    {
+      "question": "What are the TWO capabilities of Application Performance Index (APDEX) in OCI Application Performance Monitoring?",
+      "options": [
+        "APDEX is used in performance queries and dashboard metrics\n",
+        "APDEX defines thresholds\n",
+        "APDEX measures user performance\n",
+        "APDEX measures user satisfaction with the application response time\n"
+      ],
+      "correct": [
+        1,
+        4
+      ]
+    },
+    {
+      "question": "Which is the correct monitoring query that will monitor the total Hosts with CPU utilization greater than a threshold including an alarm?",
+      "options": [
+        "CpuUtilization[5m].max()\n",
+        "CpuUtilization[5m].max().grouping().sum()\n",
+        "CpuUtilization[5m]{shape = \"VM.Standard.E4.Flex\"}.max()\n",
+        "(CpuUtilization[5m].max() > 80).grouping().sum()\n"
+      ],
+      "correct": 4
+    },
+    {
+      "question": "After setting up an APM Domain in OCI Application Performance Monitoring, which of the following resource is immediately available to start ingesting application telemetry data?",
+      "options": [
+        "Data Upload Endpoint\n",
+        "Traces\n",
+        "Metric Definitions\n"
+      ],
+      "correct": 1
+    },
+    {
+      "question": "What are the purposes of using Log Sources in OCI Logging Analytics? Select TWO",
+      "options": [
+        "Act as a storage location for collected logs\n",
+        "Specify how log data should be parsed and processed\n",
+        "Define the location of log data\n",
+        "Control user access to log data\n"
+      ],
+      "correct": [
+        2,
+        3
+      ]
+    },
+    {
+      "question": "You want to improve resource utilization management in your OCI environment by notifying your team each time a new compute instance is created.\nWhich of the following OCI feature would you use to achieve this?",
+      "options": [
+        "Set up a query in OCI Monitoring to track the CpuUtilization metric for compute instances and define a threshold alarm.\n",
+        "Configure an Autoscaling Policy on an instance pool to automatically create instances when aggregate CPU utilization exceeds a defined threshold.\n",
+        "Create a rule in OCI Events Service to trigger notifications when the Instance \u2013 Launch End event occurs.\n"
+      ],
+      "correct": 3
+    },
+    {
+      "question": "After setting up OCI Management Agents and successfully discovering resources in OCI Stack Monitoring, what happens next as part of the monitoring process?",
+      "options": [
+        "Metric data is immediately collected.\n",
+        "Management Agents discover resources that are running locally on the instance.\n",
+        "Email notifications are sent through OCI Notifications for all discovered resources.\n",
+        "Predefined alarm rules are triggered automatically for performance issues.\n"
+      ],
+      "correct": 1
+    },
+    {
+      "question": "Your organization uses OCI Connector Hub to transfer logs from OCI Logging to OCI Object Storage for archiving. However, you want to limit the data being transferred to only error-level logs to optimize storage usage and ensure relevance.\nWhich feature should you use while creating the Connector to achieve this?",
+      "options": [
+        "Log filter task\n",
+        "Tags\n",
+        "Retention Policies\n",
+        "IAM Policies\n"
+      ],
+      "correct": 1
+    },
+    {
+      "question": "Which OCI Observability service is used to analyze the behavior of distributed systems, including tracing requests across various components?",
+      "options": [
+        "OCI Application Performance Monitoring\n",
+        "OCI Events\n",
+        "OCI Logging Analytics\n",
+        "OCI Monitoring\n"
+      ],
+      "correct": 1
+    },
+    {
+      "question": "Which of the following are valid about Dedicated Vantage Points in OCI Application Performance Monitoring (APM)? Select TWO",
+      "options": [
+        "Dedicated Vantage Points are shared across multiple tenants for global monitoring\n",
+        "Dedicated Vantage Points allow Synthetic Monitoring from specific, user-configured locations\n",
+        "Dedicated Vantage Points are used for analyzing traces and spans within distributed systems\n",
+        "Dedicated Vantage Points are used to monitor applications which cannot be accessed by a public vantage point\n"
+      ],
+      "correct": [
+        2,
+        4
+      ]
+    },
+    {
+      "question": "You are reviewing logs in the OCI Logging service and need to retrieve structured details such as Log Group OCID, Compartment OCID, and other metadata.\nWhich format does OCI Logging use to provide this structured information?",
+      "options": [
+        "XML\n",
+        "JSON\n",
+        "YAML\n",
+        "Plain Text\n"
+      ],
+      "correct": 2
+    },
+    {
+      "question": "You are monitoring a critical web application in OCI Application Performance Monitoring (APM). To gain insights into how end users experience the application from different geographical locations, you need to use a feature that leverages Vantage Points for measuring user interactions and performance.\nWhich feature of OCI APM should you use?",
+      "options": [
+        "Real User Monitoring\n",
+        "Distributed Tracing\n",
+        "Synthetic Monitoring\n",
+        "Trace Explorer\n"
+      ],
+      "correct": 3
+    },
+    {
+      "question": "You are working as a cloud administrator in OCI Logging Analytics and need to identify and tag specific problem logs during ingestion to make them easier to filter and analyze later.\nWhich feature in OCI Logging Analytics would you use to achieve this?",
+      "options": [
+        "Labels\n",
+        "Log Origin\n",
+        "Extended Fields\n",
+        "Parser\n"
+      ],
+      "correct": 1
+    },
+    {
+      "question": "You are an OCI administrator responsible for managing logs from multiple departments in your organization. Each department utilizes different OCI resources but requires a centralized logging solution for monitoring and analysis using the OCI Logging service.\nWhich of the following is a best practice to efficiently address this requirement?",
+      "options": [
+        "Use separate log groups for each department, enable access controls while keeping the logs organized under respective namespaces.\n",
+        "Configure log groups to segregate logs based on type of events such as errors logs and access logs that could be used by the departments.\n",
+        "Aggregate all logs into a single log group to minimize management overhead and simplify the logging infrastructure.\n"
+      ],
+      "correct": 1
+    },
+    {
+      "question": "You are configuring the OCI Logging service to collect and analyze logs from your Oracle Cloud resources.\nWhich of the following are valid log categories supported by the OCI Logging service? (Select TWO)",
+      "options": [
+        "Service Logs\n",
+        "Custom Logs\n",
+        "Debug Logs\n",
+        "System Logs\n"
+      ],
+      "correct": [
+        1,
+        2
+      ]
+    },
+    {
+      "question": "Which of the following TWO are examples of Data Sources from which the OCI APM Java Agent can collect spans and metric data?",
+      "options": [
+        "Microsoft Hyper-V\n",
+        "Tomcat\n",
+        "Nginx\n",
+        "VMware ESXi\n",
+        "WebLogic\n"
+      ],
+      "correct": [
+        2,
+        5
+      ]
+    },
+    {
+      "question": "Which is a core functionality of Real User Monitoring in OCI Application Performance Monitoring (APM)?",
+      "options": [
+        "Creates a span that is added to the span attributes\n",
+        "Automatically injects the Javascript to the source pages\n",
+        "Records user interaction with websites and sends browser spans\n"
+      ],
+      "correct": 3
+    },
+    {
+      "question": "In OCI Monitoring, which of the following Statistics can be used to represent the aggregated value of a metric over a specific time period? (Select TWO)",
+      "options": [
+        "Average\n",
+        "Count\n",
+        "Sum\n",
+        "Mode\n"
+      ],
+      "correct": [
+        1,
+        3
+      ]
+    },
+    {
+      "question": "In OCI Application Performance Monitoring (APM), where is the span context information stored during its transfer between services in a distributed system?",
+      "options": [
+        "Database Tables\n",
+        "HTTP header\n",
+        "Browser and the microservices\n",
+        "HTTP call\n"
+      ],
+      "correct": 2
+    },
+    {
+      "question": "When creating Monitoring Query Language (MQL) expressions in the OCI Monitoring service, which TWO components are mandatory and cannot be omitted?",
+      "options": [
+        "GroupBy Function\n",
+        "Statistic\n",
+        "Dimension\n",
+        "Metric\n",
+        "Grouping Function\n"
+      ],
+      "correct": [
+        2,
+        4
+      ]
+    },
+    {
+      "question": "In OCI Application Performance Monitoring (APM), which of the following function can be performed using the Trace Explorer?",
+      "options": [
+        "Define custom metrics for the trace data\n",
+        "Manage user access and permissions for APM domains\n",
+        "Configure notifications for application performance thresholds\n",
+        "View details of specific spans\n"
+      ],
+      "correct": 4
+    },
+    {
+      "question": "You are configuring the OCI Logging service to collect logs from custom applications running on OCI Compute Instances.\nWhat is the primary purpose of creating an Agent Configuration in this setup?",
+      "options": [
+        "Agent Configuration is referred to a settings file on the hosts that defines the source log location.\n",
+        "Agent Configuration is used to allocate storage resources automatically along with log volumes.\n",
+        "Agent Configuration serves as a security measure to encrypt log data before it is collected and stored in OCI.\n",
+        "Agent configurations allow you to select the hosts where you want to collect logs, specify log inputs and log destination settings.\n"
+      ],
+      "correct": 4
+    },
+    {
+      "question": "You are tasked with running aggregated queries against OCI Monitoring data. However, upon executing the query, you receive the following error:\n\"Query has exceeded the maximum number of metric streams\"\nWhat step should you take to ensure the query runs successfully?",
+      "options": [
+        "Check the OCI Identity and Access Management (IAM) policy and re-run the query\n",
+        "Increase the query limits and the number of streams by specifying dimensions\n",
+        "Limit the number of streams by specifying dimensions\n"
+      ],
+      "correct": 3
+    },
+    {
+        "question": "You are configuring OCI Events to trigger a notification when a new Virtual Cloud Network (VCN) is created in your Oracle Cloud Infrastructure tenancy. You need to define an event rule to capture this event. Which of the following event type and service name combinations should you use in your event rule? (Choose two)",
+        "options": [
+          "Event Type: com.oraclecloud.vcn.createvcn.end",
+          "Event Type: com.oraclecloud.core.vcn.createvcn.begin",
+          "Service Name: vcn",
+          "Service Name: core.vcn",
+          "Event Type: com.oraclecloud.core.vcn.updatevcn.end"
+        ],
+        "correct": [
+          1,
+          4
+        ]
+      },
+      {
+        "question": "You are monitoring the metric \u201cCpuUtilization\u201d for 5 compute instances using the OCI Monitoring service, and the graph currently displays aggregated data for all 5 instances. You need to filter the graph to show metrics only for instances that have the tag \u201cEnvironment\u201d with the value \u201cProduction\u201d. Which feature of OCI Monitoring can be used to achieve this?",
+        "options": [
+          "Choose dimensions for the tag \u201cEnvironment\u201d.",
+          "Choose the data table and search for instances by tag value.",
+          "Choose the grouping function to group by tag \u201cEnvironment\u201d.",
+          "Choose the option \u201cAggregate metric streams\u201d by tag \u201cEnvironment\u201d."
+        ],
+        "correct": 1
+      },
+      {
+        "question": "What is the primary reason for creating custom Dashboards in OCI Logging Analytics?",
+        "options": [
+          "To visualize key log data and metrics in a centralized view for easier monitoring.",
+          "To configure and oversee alerting and notification settings for log events.",
+          "To apply machine learning techniques for deriving insights from log data."
+        ],
+        "correct": 1
+      },
+      {
+        "question": "Which OCI Logging feature allows you to create a single, logical view of logs from multiple sources across your entire OCI tenancy?",
+        "options": [
+          "Log Groups",
+          "Log Analytics",
+          "Unified Agent Configuration",
+          "Service Connector Hub"
+        ],
+        "correct": 1
+      },
+      {
+        "question": "Which of the following BEST describes the concept of \"tracing\" in OCI APM?",
+        "options": [
+          "Aggregating performance metrics over time.",
+          "Recording individual events in a log file.",
+          "Tracking the complete path of a request as it flows through various services and components.",
+          "Defining thresholds for triggering alerts based on performance metrics."
+        ],
+        "correct": 3
+      },
+      {
+        "question": "In OCI Events Service, what is the purpose of a \"Rule\"?",
+        "options": [
+          "To define the format of events that are captured.",
+          "To specify the destination where events are stored.",
+          "To filter events based on specific criteria and trigger actions.",
+          "To define the retention period for events."
+        ],
+        "correct": 3
+      },
+      {
+        "question": "You are a cloud administrator tasked with setting up continuous and automatic log ingestion from an OCI Compute instance into OCI Logging Analytics. Which method is recommended to achieve this requirement?",
+        "options": [
+          "Utilize the LogEvents API to push logs to OCI Logging Analytics.",
+          "Configure the OCI Management Agent on the Compute instance to ingest logs.",
+          "Use OCI Events to trigger log ingestion.",
+          "Configure a Service Connector to transfer logs into OCI Logging Analytics."
+        ],
+        "correct": 2
+      },
+      {
+        "question": "Which of the following BEST describes the function of \"Lookup Enrichment\" in OCI Logging Analytics?",
+        "options": [
+          "It automatically identifies and removes duplicate log entries.",
+          "It adds additional information to log entries based on data from external sources.",
+          "It encrypts log data to protect sensitive information.",
+          "It compresses log data to reduce storage costs."
+        ],
+        "correct": 2
+      },
+      {
+        "question": "Which of the following BEST describes the core function of the Oracle Cloud Infrastructure (OCI) Events Service?",
+        "options": [
+          "To collect and store performance metrics from OCI resources.",
+          "To provide a centralized logging platform for all OCI services.",
+          "To enable real-time reaction to state changes in OCI resources.",
+          "To visualize resource utilization and cost trends."
+        ],
+        "correct": 3
+      },
+      {
+        "question": "You are designing an event-driven architecture in OCI. You want to create an Event Rule that only triggers when an Object Storage bucket is created in a specific compartment within your tenancy. Which attributes are required for an Event Rule to achieve this outcome? (Choose two)",
+        "options": [
+          "eventType",
+          "compartmentId",
+          "resourceName",
+          "resourceId",
+          "source"
+        ],
+        "correct": [
+          1,
+          2
+        ]
+      },
+      {
+      "question": "What is the primary purpose of the OCI Logging Analytics service?",
+      "options": [
+          "To automatically back up log data to a separate storage location.",
+          "To provide advanced search, analysis, and visualization capabilities for log data.",
+          "To define the retention period for log data.",
+          "To configure the sources from which logs are collected."
+        ],
+        "correct": 2
+      },
+      {
+        "question": "What is the PRIMARY purpose of Service Connector Hub in Oracle Cloud Infrastructure (OCI)?",
+        "options": [
+          "To provide a centralized repository for storing all log data.",
+          "To orchestrate the movement of data between OCI services.",
+          "To define security policies for accessing OCI resources.",
+          "To monitor the health and performance of OCI services."
+        ],
+        "correct": 2
+      },
+      {
+        "question": "While running an aggregated query on OCI Monitoring data, you receive the following error: \"Query has exceeded the maximum number of metric streams.\" Which action should you take to resolve this issue and ensure the query runs successfully?",
+        "options": [
+          "Limit the number of metric streams by applying filters with specific dimensions.",
+          "Increase the query limits and allow more metric streams by defining additional dimensions.",
+          "Check the OCI Identity and Access Management (IAM) policy and attempt to run the query again."
+        ],
+        "correct": 1
+      },
+      {
+        "question": "You are configuring OCI Stack Monitoring to monitor the health and performance of your organization\u2019s resources. Which of the following resources can be monitored using OCI Stack Monitoring?",
+        "options": [
+          "Virtual Cloud Network (VCN)",
+          "External Database",
+          "Object Storage"
+        ],
+        "correct": 2
+      },
+      {
+        "question": "Which TWO capabilities does the Application Performance Index (APDEX) provide in OCI Application Performance Monitoring?",
+        "options": [
+          "It evaluates user satisfaction based on application response times.",
+          "It is utilized in performance queries and dashboard metrics.",
+          "It establishes performance threshold values.",
+          "It directly measures user performance."
+        ],
+        "correct": [
+          1,
+          2
+        ]
+      },
+      {
+        "question": "You are using the OCI Logging service to collect audit logs from various OCI services. You notice that some audit events are missing, particularly those related to changes in IAM policies. You need to ensure that all relevant audit logs are being collecteWhich TWO of the following steps should you take to resolve this issue?",
+        "options": [
+          "Verify that the IAM policy granting the Logging service access to collect audit logs is correctly configured with the necessary permissions.",
+          "Ensure that the correct Oracle Cloud Identifier (OCID) for the audit logs service is specified in the log group configuration.",
+          "Check the OCI Service Limits to ensure you have not exceeded the maximum number of audit logs that can be collected.",
+          "Enable audit logging for the specific IAM compartments and resources you want to monitor."
+        ],
+        "correct": [
+          1,
+          4
+        ]
+      },
+      {
+        "question": "You are part of the Cloud Security Operations team in an organization where thousands of users access Oracle Cloud InfrastructurA configuration error has been reported, and it seems to be caused by an unknown user action. You need to:  Identify all users who were active in the past six hours. Review any REST API calls they made during that perioWhich OCI feature should you use for this investigation?",
+        "options": [
+          "ObjectCollectionRule",
+          "OCI Cloud Guard",
+          "OCI Resource Manager",
+          "Audit Analysis Dashboard"
+        ],
+        "correct": 4
+      },
+      {
+        "question": "You are analyzing log data in Oracle Logging Analytics to troubleshoot a performance degradation issue in a microservices application. You need to create a visualization that shows the correlation between the latency of a specific API call and the number of error logs generated by a dependent service over the last hour. Which visualization type is most suitable for this task?",
+        "options": [
+          "Pie Chart",
+          "Table View",
+          "Time Series Line Chart with Dual Y-Axis",
+          "Word Cloud"
+        ],
+        "correct": 3
+      },
+      {
+        "question": "Your organization ABC Private Limited uses Oracle Cloud Infrastructure (OCI), and the development team frequently uploads configuration files to an Object Storage bucket. You need to ensure these files are automatically processed into a specific format immediately after they are uploadeWhat is the best approach to achieve this?",
+        "options": [
+          "Configure an OCI Events Rule with Object Storage as the service name and set the Event Type to \"Subscription \u2013 Create.\" Then, add an action to send a notification to the development team.",
+          "Configure an OCI Events Rule with Object Storage as the service name and set the Event Type to \"Object \u2013 Create.\" Then, add an action to trigger an OCI Function that will process the files.",
+          "Configure an OCI Events Rule with Object Storage as the service name and set the Event Type to \"Application \u2013 Create.\" Then, add an action to forward the event details to OCI Streaming."
+        ],
+        "correct": 2
+      },
+      {
+        "question": "Which of the following visualizations in OCI APM is MOST useful for identifying performance bottlenecks in a distributed application?",
+        "options": [
+          "A table displaying the number of requests per minute.",
+          "A pie chart showing the distribution of response times.",
+          "A Gantt chart visualizing the sequence and duration of spans within a trace.",
+          "A geographical map showing the location of users accessing the application."
+        ],
+        "correct": 3
+      },
+      {
+        "question": "What is the PRIMARY benefit of using Entity Types in OCI Logging Analytics?",
+        "options": [
+          "They automatically back up log data to a secondary region.",
+          "They provide a standardized way to represent and analyze log data related to specific resources.",
+          "They define the retention period for log data in OCI Logging Analytics.",
+          "They automatically create dashboards based on log data."
+        ],
+        "correct": 2
+      },
+      {
+        "question": "As a cloud administrator, you need to set up continuous and automated log ingestion from an OCI Compute instance into OCI Logging Analytics. Which method is the recommended approach?",
+        "options": [
+          "Use the LogEvents API to send logs to OCI Logging Analytics.",
+          "Install and configure the OCI Management Agent on the Compute instance for log ingestion.",
+          "Set up an OCI Events rule to trigger log ingestion.",
+          "Create a Service Connector to route logs to OCI Logging Analytics."
+        ],
+        "correct": 2
+      },
+      {
+        "question": "Which of the following BEST describes the role of logs within the pillars of Observability in Oracle Cloud Infrastructure (OCI)?",
+        "options": [
+          "Provide summarized metrics about system performance.",
+          "Record discrete events and transactions, offering insights into system behavior.",
+          "Define predefined thresholds and triggers for alerts.",
+          "Establish relationships between different system components."
+        ],
+        "correct": 2
+      },
+      {
+        "question": "You want to enhance resource utilization management in your OCI environment by ensuring your team is notified whenever a new compute instance is createWhich OCI feature should you use to achieve this?",
+        "options": [
+          "Set up an OCI Monitoring query to track the CpuUtilization metric for compute instances and define an alarm based on a threshold.",
+          "Configure an Autoscaling Policy on an instance pool to automatically launch new instances when aggregate CPU utilization exceeds a specified limit.",
+          "Create an OCI Events Service rule to trigger notifications when an \"Instance - Launch End\" event occurs."
+        ],
+        "correct": 3
+      },
+      {
+        "question": "Your organization needs to ingest custom application logs from a third-party application running on an on-premises server into OCI Logging Analytics. What is the most suitable method for this scenario?",
+        "options": [
+          "Use OCI Service Connector to pull logs from the on-premises server.",
+          "Install the OCI Management Agent on the on-premises server and configure it to send logs.",
+          "Configure OCI Events to forward logs from the on-premises server.",
+          "Utilize the LogEvents API to push logs from the on-premises server to OCI Logging Analytics."
+        ],
+        "correct": 4
+      },
+      {
+        "question": "In OCI Application Performance Monitoring (APM), where is the span context information stored when it is transmitted between services in a distributed system?",
+        "options": [
+          "In the browser and microservices",
+          "Within the HTTP call",
+          "Inside the HTTP header",
+          "In database tables"
+        ],
+        "correct": 3
+      },
+      {
+        "question": "In OCI Application Performance Monitoring (APM), what is the PRIMARY purpose of the \"Span Details\" view?",
+        "options": [
+          "To view aggregated performance metrics for the entire application.",
+          "To examine the specific attributes, timings, and dependencies of a single operation within a trace.",
+          "To configure alerts based on application performance.",
+          "To manage the agents collecting data from the application."
+        ],
+        "correct": 2
+      },
+      {
+        "question": "Which of the following is a key consideration when instrumenting a production application for OCI APM data collection?",
+        "options": [
+          "Minimizing the performance overhead of the instrumentation.",
+          "Maximizing the amount of data collected, regardless of the impact on performance.",
+          "Disabling all security features to ensure complete data collection.",
+          "Using the most complex instrumentation techniques available"
+        ],
+        "correct": 1
+      },
+      {
+        "question": "Which of the following OCI services is MOST commonly used as a SOURCE for Service Connector Hub when transitioning log data?",
+        "options": [
+          "OCI Compute",
+          "OCI Object Storage",
+          "OCI Logging",
+          "OCI Events Service"
+        ],
+        "correct": 3
+      },
+      {
+        "question": "You need to trigger a workflow in OCI Workflows whenever a new compute instance is launched in a specific compartment. Which OCI service integration is essential to achieve this?",
+        "options": [
+          "OCI Logging Analytics.",
+          "OCI Events and OCI Workflows.",
+          "OCI Service Connector Hub.",
+          "OCI Monitoring and Alarms."
+        ],
+        "correct": 2
+      },
+      {
+        "question": "What is the purpose of Dimensions in the context of OCI Monitoring metrics?",
+        "options": [
+          "To define the data type of a metric (e.g., integer, float, string).",
+          "To provide additional context or metadata about a metric.",
+          "To calculate aggregated values of metrics over time.",
+          "To specify the units of measurement for a metric value."
+        ],
+        "correct": 2
+      },
+      {
+        "question": "What is the PRIMARY goal of Application Performance Monitoring (APM) in Oracle Cloud Infrastructure (OCI)?",
+        "options": [
+          "To manage the cost of OCI resources.",
+          "To improve the availability and performance of applications.",
+          "To secure OCI resources from unauthorized access.",
+          "To automate the deployment of applications to OCI."
+        ],
+        "correct": 2
+      },
+      {
+        "question": "During a security incident investigation, you are using Oracle Logging Analytics to identify unusual patterns in user login logs. You want to create a query that detects users who have logged in from multiple geographically distant locations within a short time framWhich Oracle Logging Analytics function would be most effective for identifying these patterns?",
+        "options": [
+          "stats count()",
+          "cluster()",
+          "eval distinct()",
+          "link()",
+          "In OCI Logging Analytics, which type of visualization is MOST suitable for displaying the trend of a metric over time?",
+          "Bar chart",
+          "Line chart",
+          "Pie chart",
+          "Table"
+        ],
+        "correct": 4
+      },
+      {
+        "question": "Which of the following BEST describes the primary function of a Metric Namespace within OCI Monitoring?",
+        "options": [
+          "It defines the geographical region where metrics are stored.",
+          "It logically groups related metrics together.",
+          "It specifies the retention period for metric data.",
+          "It determines the user permissions for accessing metric data."
+        ],
+        "correct": 2
+      },
+      {
+        "question": "Which pillar of Observability directly addresses the relationships and dependencies between different services and components within OCI?",
+        "options": [
+          "Metrics",
+          "Logs",
+          "Traces",
+          "Alarms"
+        ],
+        "correct": 3
+      },
+      {
+        "question": "In Oracle Cloud Infrastructure (OCI) Monitoring, when writing Monitoring Query Language (MQL) expressions, which TWO components are essential and must always be included?",
+        "options": [
+          "Aggregation Function",
+          "GroupBy Clause",
+          "Metric Name",
+          "Dimension Filter",
+          "Statistical Function"
+        ],
+        "correct": [
+          1,
+          3
+        ]
+      },
+      {
+        "question": "You are configuring an alarm to monitor the CPU utilization of a critical compute instancWhat is the best practice for setting the \"Trigger Rule\" to minimize false positives while still ensuring timely alerts for genuine performance issues?",
+        "options": [
+          "Set the statistic to \"Average\" with a threshold of 95% for 1 minute.",
+          "Set the statistic to \"Maximum\" with a threshold of 90% for 5 minutes.",
+          "Set the statistic to \"Average\" with a threshold of 80% for 5 minutes.",
+          "Set the statistic to \"Minimum\" with a threshold of 75% for 1 minute."
+        ],
+        "correct": 3
+      },
+      {
+        "question": "What is the MOST common method for instrumenting Java applications for data collection in OCI Application Performance Monitoring (APM)?",
+        "options": [
+          "Manually editing the application's bytecode.",
+          "Using an APM Java Agent.",
+          "Modifying the operating system kernel.",
+          "Directly querying the application's database."
+        ],
+        "correct": 2
+      },
+      {
+        "question": "In OCI Connector Hub, which of the following represents a valid source and target pairing?",
+        "options": [
+          "OCI Events as the source and OCI Logging Analytics as the target",
+          "OCI Monitoring as the source and OCI Logging as the target",
+          "OCI Logging as the source and OCI Object Storage as the target",
+          "OCI Logging Analytics as the source and OCI Logging as the target"
+        ],
+        "correct": 3
+      },
+      {
+        "question": "Which best practice should you prioritize when configuring alarm thresholds to minimize alert fatigue? \u2022",
+        "options": [
+          "Set alarm thresholds at the absolute minimum detectable valu",
+          "Use static thresholds for all metrics, regardless of historical data.",
+          "Implement dynamic thresholds based on historical metric behavior.",
+          "Create separate alarms for every available metric, regardless of relevance."
+        ],
+        "correct": 3
+      },
+      {
+        "question": "When using Monitoring Query Language (MQL) expressions in the OCI Monitoring service, which TWO grouping functions are available?",
+        "options": [
+          "Grouping()",
+          "GroupBy()",
+          "Group()",
+          "GroupTo()"
+        ],
+        "correct": [
+          1,
+          2
+        ]
+      },
+      {
+        "question": "You are monitoring the metric \u201cDiskIOPsWritten\u201d for 10 compute instances using the OCI Monitoring service, and the graph currently displays data for all 10 instances. You need to filter the graph to show metrics only for instances that use the \u201cVM.Standard.E4.Flex\u201d shape and are running in the AD-1 availability domain. Which feature of OCI Monitoring can be used to achieve this?",
+        "options": [
+          "Choose dimensions for shape and availability domain.",
+          "Choose the data table and search for instances by shape and availability domain.",
+          "Choose the grouping function to group by shape and availability domain.",
+          "Choose the option \u201cAggregate metric streams\u201d by shape and availability domain."
+        ],
+        "correct": 1
+      },
+      {
+        "question": "You need to run aggregated queries on OCI Monitoring data, but when executing the query, you encounter this error: \"Query has exceeded the maximum number of metric streams.\" What should you do to ensure the query executes successfully?",
+        "options": [
+          "Reduce the number of metric streams by filtering with specific dimensions.",
+          "Expand the query limits and allow more metric streams by specifying dimensions.",
+          "Verify the OCI Identity and Access Management (IAM) policy and try running the query again."
+        ],
+        "correct": 1
+      },
+      {
+        "question": "When creating a rule in the OCI Events service, which TWO action types are available?",
+        "options": [
+          "Monitoring",
+          "Functions",
+          "Connector Hub",
+          "Streaming"
+        ],
+        "correct": [
+          2,
+          4
+        ]
+      },
+      {
+        "question": "Your team is responsible for collecting application logs from various OCI Compute instances. You need to categorize these logs based on the application they originate from (e.g., Webserver logs, Database logs, etc.). You also need to ensure that logs are collected efficiently without overwhelming the OCI Logging servicWhich TWO actions would accomplish this?",
+        "options": [
+          "Create separate log groups for each application category and configure each instance to emit logs into the appropriate log group.",
+          "Install the OCI Unified Monitoring Agent on each Compute instance and configure it with a single logging configuration to collect all application logs.",
+          "Use a single log group and rely on Log Analytics features for categorization after the logs are ingested.",
+          "Define custom log sources within each log group, specifying the log file paths and using filters to capture logs specific to each application."
+        ],
+        "correct": [
+          1,
+          4
+        ]
+      },
+      {
+        "question": "Which search operator in OCI Logging Analytics is used to find log entries that contain either one keyword OR another?",
+        "options": [
+          "AND",
+          "OR",
+          "NOT",
+          "NEAR"
+        ],
+        "correct": 2
+      },
+      {
+        "question": "You want to capture all changes made to your OCI Identity and Access Management (IAM) policies and route these events to an OCI Streaming service for real-time analysis. Which OCI service should you use to capture these events?",
+        "options": [
+          "OCI Audit.",
+          "OCI Logging.",
+          "OCI Vault.",
+          "OCI Notifications."
+        ],
+        "correct": 1
+      },
+      {
+        "question": "You are tracking the \"DiskIOPsWritten\" metric for 10 compute instances using the OCI Monitoring servicCurrently, the graph displays data for all instances. You want to filter the graph to display only the instances that are using the \"VM.Standard.E4.Flex\" shape and are running in Availability Domain 1 (AD-1). Which OCI Monitoring feature should you use to achieve this?",
+        "options": [
+          "Apply dimensions to filter by shape and availability domain.",
+          "Use the data table to search for instances by shape and availability domain.",
+          "Apply a grouping function to organize data by shape and availability domain.",
+          "Select the \"Aggregate metric streams\" option by shape and availability domain"
+        ],
+        "correct": 1
+      },
+      {
+        "question": "What is the role of a \"Field\" in OCI Logging Analytics?",
+        "options": [
+          "To define the sources from which logs are collected.",
+          "To represent a specific attribute or piece of data extracted from a log message.",
+          "To group related log entries together for analysis.",
+          "To specify the format in which log data is stored."
+        ],
+        "correct": 2
+      },
+      {
+        "question": "Which of the following is a primary benefit of using the OCI Events Service in conjunction with OCI Functions?",
+        "options": [
+          "To automatically scale OCI Functions based on incoming traffic.",
+          "To trigger serverless code execution in response to resource state changes.",
+          "To store event data for long-term analysis and auditing.",
+          "To visualize event patterns and trends in a graphical dashboard."
+        ],
+        "correct": 2
+      },
+      {
+        "question": "While monitoring a critical web application in OCI Application Performance Monitoring (APM), which feature should you use to measure user interactions and performance from different geographical locations using Vantage Points?",
+        "options": [
+          "Distributed Tracing",
+          "Trace Explorer",
+          "Synthetic Monitoring",
+          "Real User Monitoring",
+          "Which of the following filtering techniques is MOST effective for isolating log entries related to a specific application within OCI Logging Analytics?",
+          "Filtering by timestamp",
+          "Filtering by log level (e.g., ERROR, WARNING)",
+          "Filtering by the application's name or ID in the log message.",
+          "Filtering by the size of the log file."
+        ],
+        "correct": 3
+      },
+      {
+        "question": "In the context of OCI Observability and Management, what is the role of alarms?",
+        "options": [
+          "To provide detailed, real-time performance metrics.",
+          "To record individual events and transactions within the system.",
+          "To notify users when predefined thresholds are breached.",
+          "To visualize the relationships between different system components.",
+          "You are building an OCI Events rule to capture changes related to Network Security Groups (NSGs) within your tenancy. You want to monitor for creation, updates, and deletion of NSGs, and you want to optimize the rule to minimize the number of events processed."
+        ],
+        "correct": 3
+      },
+      {
+        "question": "Which of the following combinations would efficiently capture all three types of NSG modifications (create, update, delete)? (Select two)",
+        "options": [
+          "Event Type Prefix: com.oraclecloud.core.nsg, Source: oci.core.virtualnetwork",
+          "Event Type: com.oraclecloud.core.nsg.create, Source: oracle.core.virtualnetwork",
+          "Event Type: com.oraclecloud.core.virtualnetwork.nsg.update, Source: oci.core.virtualnetwork",
+          "Event Type Prefix: com.oraclecloud.core.virtualnetwork.nsg, Source: oci.core.virtualnetwork",
+          "Event Type: com.oraclecloud.core.nsg.delete, Source: oci.core.nsg"
+        ],
+        "correct": [
+          1,
+          4
+        ]
+      },
+      {
+        "question": "You are tasked with automating the scaling of a compute instance based on custom application metrics. Which OCI services should be integrated to achieve this?",
+        "options": [
+          "OCI Monitoring, OCI Events, and OCI Functions.",
+          "OCI Logging, OCI Service Connector Hub, and OCI Notifications.",
+          "OCI Audit, OCI Streaming, and OCI Vault.",
+          "OCI Resource Manager, OCI Workflows, and OCI Events."
+        ],
+        "correct": 1
+      },
+      {
+        "question": "In OCI Monitoring, which component allows you to define the time duration (e.g., 5 minutes or 10 minutes) over which metric data points are aggregated?",
+        "options": [
+          "Dimension",
+          "Interval",
+          "Metric Namespace",
+          "Resolution"
+        ],
+        "correct": 2
+      },
+      {
+        "question": "What role does configuration play in instrumentation for OCI APM?",
+        "options": [
+          "It determines the types of data that are collected and how they are processed.",
+          "It automatically backs up the application's code to OCI Object Storage.",
+          "It optimizes the application's database queries.",
+          "It encrypts the application's network traffic."
+        ],
+        "correct": 1
+      },
+      {
+        "question": "Once OCI Management Agents have been set up and resources are successfully discovered in OCI Stack Monitoring, what is the next step in the monitoring process?",
+        "options": [
+          "The system begins collecting metric data immediately.",
+          "Preconfigured alarm rules automatically activate for detecting performance issues.",
+          "Management Agents identify and track resources running locally on the instance.",
+          "OCI Notifications sends email alerts for all newly discovered resources."
+        ],
+        "correct": 1
+      },
+      {
+        "question": "An application is experiencing intermittent performance issues, and you need to analyze the execution time of specific transactions across different application components. You have instrumented your application to emit trace data to Oracle Cloud Infrastructure (OCI) Logging. Which OCI Observability and Management service should you use to visualize and analyze the transaction execution time across the distributed application?",
+        "options": [
+          "OCI Monitoring",
+          "OCI Logging Analytics",
+          "OCI Application Performance Monitoring (APM)",
+          "OCI Service Connector Hub"
+        ],
+        "correct": 3
+      },
+      {
+        "question": "Which of the following is a KEY feature of OCI Logging Analytics' ability to perform pattern detection?",
+        "options": [
+          "Automatically creating alarms for frequently occurring errors.",
+          "Identifying common sequences of events or anomalies in log data.",
+          "Encrypting log data with a unique key for each pattern.",
+          "Backing up log data based on identified patterns."
+        ],
+        "correct": 2
+      },
+      {
+        "question": "When setting up an alarm for a network bandwidth metric, what is the best practice for utilizing the \"Metric Dimensions\" to create more granular and targeted alarms?",
+        "options": [
+          "Create separate alarms for each region and availability domain.",
+          "Create a single alarm with a broad threshold for all network traffic.",
+          "Create alarms based on specific source and destination IP addresses.",
+          "Create alarms based on different traffic types (e.g., ingress, egress)."
+        ],
+        "correct": 4
+      },
+      {
+        "question": "What is a primary function of Real User Monitoring in OCI Application Performance Monitoring (APM)?",
+        "options": [
+          "Generates a span and appends it to span attributes.",
+          "Captures user interactions on websites and transmits browser spans.",
+          "Automatically inserts JavaScript into the source web pages"
+        ],
+        "correct": 2
+      },
+      {
+        "question": "Which of the following is a core benefit of implementing OCI Observability and Management across all three pillars?",
+        "options": [
+          "Eliminating the need for any application code changes.",
+          "Providing a holistic understanding of system health and performance.",
+          "Guaranteeing 100% uptime for all OCI resources.",
+          "Automatically resolving all system issues without human intervention."
+        ],
+        "correct": 2
+      },
+      {
+        "question": "Which statement BEST describes the purpose of a \"Query\" within the OCI Monitoring Service?",
+        "options": [
+          "To define the thresholds for triggering alarms.",
+          "To transform metric data into a different format.",
+          "To retrieve and filter metric data based on specific criteria.",
+          "To define the visualization of metric data in a dashboard."
+        ],
+        "correct": 3
+      },
+      {
+        "question": "In OCI Logging Analytics, which of the following represents a valid Log Source?",
+        "options": [
+          "Data files in formats such as JSON, XML, and CSV.",
+          "System logs like Windows Events, Syslog Listener, and Database SQL parsers.",
+          "Data field types such as Long, Integer, and String.",
+          "The system log file path /var/log/messages."
+        ],
+        "correct": 2
+      },
+      {
+        "question": "Which feature of OCI Logging allows you to filter log entries based on specific criteria during the search process?",
+        "options": [
+          "Retention Policies",
+          "Query Language",
+          "Log Streams",
+          "Archiving Rules"
+        ],
+        "correct": 2
+      },
+      {
+        "question": "Which statement is TRUE about the relationship between OCI Logging and Service Connector Hub regarding log retention?",
+        "options": [
+          "Service Connector Hub automatically manages the retention period of logs in OCI Logging.",
+          "Service Connector Hub's retention policy overrides OCI Logging's retention policy.",
+          "Service Connector Hub allows you to archive logs to other services, effectively extending their retention beyond OCI Logging's limits.",
+          "Service Connector Hub duplicates logs within OCI Logging, doubling the storage consumption."
+        ],
+        "correct": 3
+      },
+      {
+        "question": "Your company has a hybrid cloud environment with resources both on-premises and in OCI. You need to collect logs from various sources, including Linux servers, Windows servers, and network devices, and consolidate them in OCI Logging for centralized analysis and troubleshooting. Which TWO components of the OCI Observability and Management platform are BEST suited for collecting logs from these diverse sources?",
+        "options": [
+          "OCI Unified Monitoring Agent",
+          "OCI Bastion Service",
+          "Connector Hub",
+          "OCI Network Firewall"
+        ],
+        "correct": [
+          1,
+          3
+        ]
+      },
+      {
+        "question": "Which of the following log ingestion methods allows for real-time log streaming directly from OCI Functions to OCI Logging Analytics?",
+        "options": [
+          "OCI Management Agent.",
+          "OCI Service Connector.",
+          "Direct logging via language-specific logging libraries within the function code.",
+          "LogEvents API"
+        ],
+        "correct": 3
+      },
+      {
+        "question": "Which of the following is a key benefit of using OCI APM's \"Service Map\" feature?",
+        "options": [
+          "Automatically generating documentation for your application's code.",
+          "Visually representing the dependencies and interactions between different services in your application.",
+          "Automatically scaling OCI resources based on application demand.",
+          "Automatically backing up your application's data to OCI Object Storage."
+        ],
+        "correct": 2
+      },
+      {
+        "question": "Which TWO statements about Dedicated Vantage Points in OCI Application Performance Monitoring (APM) are correct?",
+        "options": [
+          "They are used for analyzing traces and spans within distributed systems.",
+          "They monitor applications that cannot be accessed by a public vantage point.",
+          "They are shared across multiple tenants for global monitoring.",
+          "They enable Synthetic Monitoring from specific, user-configured locations."
+        ],
+        "correct": [
+          2,
+          4
+        ]
+      },
+      {
+        "question": "You have set up an alarm in OCI Monitoring to notify via email when CPU utilization exceeds 80%. The alarm is configured to resend notifications at intervals if it stays in the firing statHowever, a team member received only the initial notification and no subsequent alerts. What could be the reason?",
+        "options": [
+          "Resending notifications depends on the total metric streams returned from the query.",
+          "The repeat notification option was not enabled when creating the alarm.",
+          "OCI Monitoring service sends only one notification per Alarm Definition when the condition is met.",
+          "The trigger condition was not properly set while defining the alarm."
+        ],
+        "correct": 2
+      },
+      {
+        "question": "Which of the following is a valid \"Action\" type that can be configured in an OCI Events Service Rule?",
+        "options": [
+          "Create a new OCI Compute Instance.",
+          "Publish a message to an OCI Queue (part of the Queue service)",
+          "Modify the IAM policy for a specific user.",
+          "Directly update the configuration of a load balancer."
+        ],
+        "correct": 2
+      },
+      {
+        "question": "In OCI APM, what does it mean when a span is marked as \"critical\"?",
+        "options": [
+          "The span is experiencing a high error rate.",
+          "The span represents a key operation that significantly impacts overall transaction performance.",
+          "The span is consuming a high amount of CPU resources.",
+          "The span is sending sensitive data that needs to be encrypted."
+        ],
+        "correct": 2
+      },
+      {
+        "question": "You are using OCI Events and OCI Notifications to track the creation of Load Balancers and Compute Instances in your OCI environment. Which pair of Event Types correctly corresponds to these actions?",
+        "options": [
+          "com.oraclecloud.networking.createloadbalancer for Load Balancer creation, and com.oraclecloud.computeapi.launchinstance.end for Instance creation completion.",
+          "com.oraclecloud.networking.createloadbalancer for Load Balancer creation, and com.oraclecloud.computeapi.launchinstance.begin for Instance creation completion.",
+          "com.oraclecloud.networking.updateloadbalancer for Load Balancer creation, and com.oraclecloud.computeapi.launchinstance.end for Instance creation completion.",
+          "com.oraclecloud.networking.updateloadbalancer for Load Balancer creation, and com.oraclecloud.computeapi.launchinstance.begin for Instance creation completion."
+        ],
+        "correct": 1
+      },
+      {
+        "question": "You are tasked with proactively identifying potential application errors by analyzing log data using Oracle Logging Analytics. You want to create an alert that triggers when the frequency of a specific error message exceeds a predefined threshold within a five-minute window. Which feature of Oracle Logging Analytics should you utilize?",
+        "options": [
+          "Saved Searches",
+          "Log Parsers",
+          "Alerts",
+          "Field Enrichment"
+        ],
+        "correct": 3
+      },
+      {
+        "question": "Your company uses a custom application that writes logs to a Syslog server. You need to ingest these logs into OCI Logging Analytics. Which method is most appropriate?",
+        "options": [
+          "Install the OCI Management Agent on the Syslog server.",
+          "Configure a Service Connector to pull logs from the Syslog server.",
+          "Use a custom script to forward Syslog messages to the LogEvents API endpoint.",
+          "Configure OCI Events to trigger log ingestion from the Syslog server."
+        ],
+        "correct": 1
+      },
+      {
+        "question": "Which feature of OCI APM allows you to correlate application performance data with underlying infrastructure metrics?",
+        "options": [
+          "Log Analytics integration",
+          "Monitoring integration",
+          "Events Service integration",
+          "Service Connector Hub integration"
+        ],
+        "correct": 2
+      },
+      {
+        "question": "As a cloud administrator using OCI Logging Analytics, you need to mark specific problem logs during ingestion so they can be easily filtered and analyzed later. Which OCI Logging Analytics feature allows you to accomplish this?",
+        "options": [
+          "Log Origin",
+          "Extended Fields",
+          "Labels",
+          "Parser"
+        ],
+        "correct": 3
+      },
+      {
+        "question": "In OCI APM, what type of data is typically collected to measure the \"end-user experience\"?",
+        "options": [
+          "CPU utilization of the application servers.",
+          "Network latency between the application servers and the database.",
+          "Browser load times, page render times, and error rates.",
+          "Disk I/O performance of the storage systems."
+        ],
+        "correct": 3
+      },
+      {
+        "question": "Which TWO of the following are valid use cases for the OCI Events service?",
+        "options": [
+          "Transfer events generated by OCI resources from a source service to a target service.",
+          "Trigger file processing when a new file is uploaded to an Object Storage bucket.",
+          "Execute cleanup operations when an OCI resource is deleted.",
+          "Use OCI Events as a configuration management tool for deploying and managing servers"
+        ],
+        "correct": [
+          1,
+          3
+        ]
+      },
+      {
+        "question": "Your security team requires immediate notification when a security list rule is modified in any VCN within your OCI tenancy. Which of the following is the most efficient way to achieve this using OCI Events?",
+        "options": [
+          "Create an OCI Events Rule with the service name \"Virtual Cloud Network\" and the event type \"SecurityListRule - Update\" and configure an action to send a notification to OCI Notifications.",
+          "Create an OCI Events Rule with the service name \"Compute\" and the event type \"Instance - Update\" and configure an action to write to OCI Logging.",
+          "Create an OCI Events Rule with the service name \"Object Storage\" and the event type \"Object - Create\" and configure an action to trigger an OCI Function.",
+          "Create an OCI Events Rule with the service name \"Load Balancing\" and the event type \"Backend - Update\" and configure an action to send an email."
+        ],
+        "correct": 1
+      },
+      {
+        "question": "You are monitoring the metric \u201cDatabaseCpuUtilization\u201d for an Autonomous Database instance using OCI Monitoring. The graph is currently showing the aggregated CPU utilization. You need to filter the graph to show CPU utilization specifically for the \u201cHIGH\u201d consumer group. Which feature of OCI Monitoring can be used to achieve this?",
+        "options": [
+          "Choose dimensions for consumer group.",
+          "Choose the data table and search for the consumer group.",
+          "Choose the grouping function to group by consumer group.",
+          "Choose the option \u201cAggregate metric streams\u201d by consumer group."
+        ],
+        "correct": 1
+      },
+      {
+        "question": "Which of the following components is responsible for collecting and forwarding logs from various sources to OCI Logging?",
+        "options": [
+          "OCI Events Service",
+          "OCI Monitoring Service",
+          "OCI Compute Instance Agent",
+          "OCI Unified Agent"
+        ],
+        "correct": 4
+      },
+      {
+        "question": "You are a Solutions Architect in an OCI tenancy, and the \"Ops\" group needs permission to view and retrieve only Block Storage monitoring metrics. Which policy statement should you use to grant this access?",
+        "options": [
+          "Allow group Ops to read metrics in tenancy where target.metrics.namespace='oci_blockstore'",
+          "Allow group Ops to read blockstore-metrics in tenancy",
+          "Allow group Ops to manage metrics in tenancy where target.metrics.monitoring='oci_blockstore'",
+          "Restricting monitoring access only to Block Storage metrics is not possible"
+        ],
+        "correct": 1
+      },
+      {
+        "question": "What are the MAIN FUNCTIONS of using Log Sources in OCI Logging Analytics? (Select TWO)",
+        "options": [
+          "Define the location of log data",
+          "Control user access to log data",
+          "Specify how log data should be parsed and processed",
+          "Act as a storage location for collected logs"
+        ],
+        "correct": [
+          1,
+          3
+        ]
+      },
+      {
+        "question": "You are tasked with collecting custom application logs from a Kubernetes cluster running on OCI. The application logs are written to standard output (stdout) and standard error (stderr) streams within the containers. You want to collect these logs and forward them to OCI Logging for analysis. Which TWO methods could you use to accomplish this?",
+        "options": [
+          "Configure the OCI Fluentd plugin within the Kubernetes cluster to forward the container logs to OCI Logging.",
+          "Install the OCI Unified Monitoring Agent on each Kubernetes node and configure it to collect container logs using the docker log driver.",
+          "Configure the Kubernetes API server to directly stream logs to OCI Logging.",
+          "Use the OCI Cloud Native Logging add-on (if available) for automated collection and forwarding of container logs to OCI Logging."
+        ],
+        "correct": [
+          1,
+          4
+        ]
+      },
+      {
+        "question": "In OCI Logging Analytics, which  concepts represents a resource such as a Compute instance or Database that produces log data?",
+        "options": [
+          "A Log Source that identifies where logs originate, such as system or application logs.",
+          "A Parser that processes and extracts useful details from raw log data.",
+          "An Entity that defines a specific resource, like a Compute instance or Database, responsible for generating logs.",
+          "A Link that connects different log data sources for correlation."
+        ],
+        "correct": 3
+      },
+      {
+        "question": "You are setting up an OCI Events rule to automatically perform cleanup tasks after a Compute instance is terminateYou need to ensure your cleanup function only runs after the instance is fully terminated and no longer exists. Which event types or additional criteria should you use to reliably trigger the cleanup function only after the instance is completely terminated? (Select two)",
+        "options": [
+          "Use the com.oraclecloud.computeapi.terminateinstance.end event type.",
+          "Use the com.oraclecloud.core.instance.deleted event type.",
+          "Add a condition to the rule to check for the data.lifecycleState being equal to \"TERMINATED\".",
+          "Use the com.oraclecloud.audit.instance.delete event type instead.",
+          "Use the com.oraclecloud.core.instance.stopping event type."
+        ],
+        "correct": [
+          1,
+          2
+        ]
+      },
+      {
+        "question": "Within the OCI Monitoring Service, what is the significance of the \"Resolution\" setting?",
+        "options": [
+          "It defines the level of detail captured in the metric data.",
+          "It specifies the geographic region where the metric data is stored.",
+          "It determines the length of time that metric data is retained.",
+          "It sets the frequency at which alarms are evaluated."
+        ],
+        "correct": 1
+      },
+      {
+        "question": "You are monitoring the metric \u201cActiveConnections\u201d for an OCI Load Balancer. The graph shows the aggregated active connections. You want to see the active connections specifically for the backend set named \u201cbackend-set-1\u201d. Which feature of OCI Monitoring can be used to achieve this?",
+        "options": [
+          "Choose dimensions for the backend set.",
+          "Choose the data table and search for the backend set.",
+          "Choose the grouping function to group by backend set.",
+          "Choose the option \u201cAggregate metric streams\u201d by backend set."
+        ],
+        "correct": 1
+      },
+      {
+        "question": "What is the purpose of using \"Facets\" in OCI Logging Analytics search?",
+        "options": [
+          "To automatically correct spelling errors in search queries.",
+          "To provide a summary of the most common values for a specific field in the search results.",
+          "To encrypt the search queries for security purposes.",
+          "To export the search results to a CSV file."
+        ],
+        "correct": 2
+      },
+      {
+        "question": "Which key components form the foundation of Observability in modern cloud environments like OCI?",
+        "options": [
+          "Compute, Storage, and Network.",
+          "Logs, Metrics, and Traces.",
+          "Log data, Query language, and Dashboard widgets"
+        ],
+        "correct": 2
+      },
+      {
+        "question": "Which component of OCI APM is responsible for automatically discovering and instrumenting applications running in a Kubernetes environment?",
+        "options": [
+          "The OCI Monitoring Agent.",
+          "The APM Kubernetes Operator.",
+          "The OCI Events Service.",
+          "The APM Java Agent (deployed manually on each pod)."
+        ],
+        "correct": 2
+      },
+      {
+        "question": "In OCI Logging Analytics, what is the correct method to begin collecting logs for a specific Entity?",
+        "options": [
+          "Configuring an association between the Log Source and the Entity",
+          "Creating a Parser for the Entity",
+          "Assigning the Entity to a Log Group",
+          "Enabling Tracing for the Entity"
+        ],
+        "correct": 1
+      },
+      {
+        "question": "Which OCI Observability service helps analyze the behavior of distributed systems by tracing requests across different components?",
+        "options": [
+          "OCI Monitoring",
+          "OCI Application Performance Monitoring",
+          "OCI Events",
+          "OCI Logging Analytics"
+        ],
+        "correct": 2
+      },
+      {
+        "question": "When creating a Service Connector to move logs from OCI Logging to OCI Object Storage, what is the MOST important consideration regarding the Object Storage bucket?",
+        "options": [
+          "The bucket must be publicly accessible.",
+          "The bucket must have versioning enabled.",
+          "The Service Connector must have the necessary IAM permissions to write to the bucket.",
+          "The bucket must be in the same region as the source OCI Logging service."
+        ],
+        "correct": 3
+      },
+      {
+        "question": "You are configuring an alarm for a load balancer's backend health status. Which notification destination is considered the most reliable and efficient for immediate incident response by your on-call team?",
+        "options": [
+          "Email to a distribution list.",
+          "PagerDuty integration through Notifications service.",
+          "Logging the alarm state to a custom log group.",
+          "Sending a message to an OCI Queue."
+        ],
+        "correct": 2
+      },
+      {
+        "question": "When setting up the OCI Logging service to collect logs from custom applications on OCI Compute instances, what is the primary role of an Agent Configuration?",
+        "options": [
+          "It encrypts log data before collection and storage in OCI as a security measure.",
+          "It allows you to choose which hosts to collect logs from, define log sources, and configure log destinations.",
+          "It acts as a settings file on the host that specifies the log source location.",
+          "It automatically allocates storage resources along with log volumes."
+        ],
+        "correct": 2
+      },
+      {
+        "question": "Your organization uses OCI Connector Hub to move logs from OCI Logging to OCI Object Storage for archiving. To optimize storage and keep only error-level logs, which feature should you configure when setting up the Connector?",
+        "options": [
+          "Tags",
+          "IAM Policies",
+          "Retention Policies",
+          "Log filter task"
+        ],
+        "correct": 4
+      },
+      {
+        "question": "You are responsible for managing a multi-tier application that is being monitored using OCI Stack Monitoring. To effectively utilize Stack Monitoring, you need to understand how it organizes and represents application components. Which TWO statements accurately describe how OCI Stack Monitoring organizes and represents application components?",
+        "options": [
+          "Stack Monitoring represents application components as individual resources, grouping them logically based on their function or purpose within the application.",
+          "Stack Monitoring uses a hierarchical model where application components are organized into nested groups based on their dependencies.",
+          "Stack Monitoring represents the entire application as a single, monolithic stack resource.",
+          "Stack Monitoring allows you to define custom health rules for each component based on its specific metrics and characteristics"
+        ],
+        "correct": [
+          1,
+          4
+        ]
+      },
+      {
+        "question": "Which of the following steps is required to enable a metric group in OCI Application Performance Monitoring?",
+        "options": [
+          "Define the metrics that the filter applies to and create a span filter.",
+          "Set up a span filter in the APM domain and create a metric group.",
+          "Execute predefined queries in the Trace Explorer and create a metric group.",
+          "Create a span filter and send metric data to the OCI Monitoring service."
+        ],
+        "correct": 2
+      },
+      {
+        "question": "What is the primary function of a Dynamic Group within the context of OCI resource discovery and monitoring using metrics?",
+        "options": [
+          "To define custom dashboards within OCI Monitoring.",
+          "To automatically group OCI resources based on defined criteria for simplified permission management and metric collection.",
+          "To enable cross-tenancy monitoring of resources.",
+          "To filter log data ingested into OCI Logging Analytics."
+        ],
+        "correct": 2
+      },
+      {
+        "question": "Which of the following is the correct monitoring query to track the total number of hosts with CPU utilization exceeding a specified threshold and trigger an alarm?",
+        "options": [
+          "(CpuUtilization[5m].max() > 80).grouping().sum()",
+          "CpuUtilization[5m]{shape = \"VM.Standard.E4.Flex\"}.max()",
+          "CpuUtilization[5m].max()",
+          "CpuUtilization[5m].max().grouping().sum()"
+        ],
+        "correct": 1
+      },
+      {
+        "question": "In OCI Monitoring, which TWO statistics can be used to represent the aggregated value of a metric over a specific time period?",
+        "options": [
+          "Count",
+          "Sum",
+          "Average",
+          "Mode"
+        ],
+        "correct": [
+          2,
+          3
+        ]
+      },
+      {
+        "question": "Which SQL-like query language is specifically designed for querying distributed tracing data in OCI Application Performance Monitoring (APM)?",
+        "options": [
+          "Thread snapshot",
+          "Trace Explorer query",
+          "Span",
+          "APM GeoMap"
+        ],
+        "correct": 2
+      },
+      {
+        "question": "You have set up an Alarm Definition in OCI Monitoring, and its current status is OK. When the alarm condition is met and it gets activated, which of the following states does it transition to?",
+        "options": [
+          "Critical",
+          "Triggered",
+          "Firing"
+        ],
+        "correct": 3
+      },
+      {
+        "question": "As an OCI administrator managing logs for multiple departments, each using different OCI resources, you need a centralized logging solution for monitoring and analysis with OCI Logging. What is the best practice for efficiently handling this requirement?",
+        "options": [
+          "Create separate log groups for each department, enforce access controls, and keep logs organized within their respective namespaces.",
+          "Organize log groups based on event types (e.g., error logs, access logs) so departments can use them as needed.",
+          "Consolidate all logs into a single log group to reduce management complexity and streamline the logging setup."
+        ],
+        "correct": 1
+      },
+      {
+        "question": "When using OCI Monitoring to analyze resource metrics, what does a \"statistic\" represent?",
+        "options": [
+          "The frequency at which metric data points are collected.",
+          "A mathematical aggregation of metric data points over a specific period.",
+          "The maximum permissible value for a particular metric.",
+          "A threshold value used for triggering alarms."
+        ],
+        "correct": 2
+      },
+      {
+        "question": "Which TWO of the following statements correctly describe a log group in OCI Logging Analytics?",
+        "options": [
+          "Log groups help partition logs to enhance search performance.",
+          "Log groups are automatically created.",
+          "Log groups are used to manage access at the compartment level.",
+          "Log groups serve as logical collections of log records."
+        ],
+        "correct": [
+          1,
+          4
+        ]
+      },
+      {
+        "question": "Which Oracle Cloud Infrastructure (OCI) service is MOST directly used to discover and monitor compute resources (instances) by collecting metrics, regardless of where they reside (OCI or on-premises)?",
+        "options": [
+          "OCI Logging Analytics",
+          "OCI Monitoring",
+          "OCI Service Connector Hub",
+          "OCI Notifications"
+        ],
+        "correct": 2
+      },
+      {
+        "question": "In OCI Monitoring, which statement BEST describes the purpose of a Metric Namespace?",
+        "options": [
+          "It defines the region where metrics are stored.",
+          "It is a container for metrics associated with a particular service or resource type, providing a logical grouping.",
+          "It specifies the retention period for metric data.",
+          "It controls access permissions to metric data."
+        ],
+        "correct": 2
+      },
+      {
+        "question": "Your team oversees several on-premises workload instances, and the architecture team is implementing OCI Logging to collect logs from these systems. To meet the requirement of archiving Info-level logs in OCI Object Storage for long-term retention, which TWO features of OCI Logging should be used?",
+        "options": [
+          "IAM policy \u2013 to control permissions for log access and management.",
+          "Connector Hub \u2013 to facilitate automated log transfer to OCI Object Storage.",
+          "Grouping function \u2013 to categorize and filter logs efficiently.",
+          "Agent Configuration \u2013 to define log collection sources and destinations."
+        ],
+        "correct": [
+          2,
+          4
+        ]
+      },
+      {
+        "question": "Once an APM Domain is set up in OCI Application Performance Monitoring, which resource becomes immediately available for ingesting application telemetry data?",
+        "options": [
+          "Data Upload Endpoint",
+          "Traces",
+          "Metric Definitions"
+        ],
+        "correct": 1
+      },
+      {
+        "question": "You are using OCI Stack Monitoring to monitor a critical application stack. You want to ensure that you are promptly notified of any performance degradations or failures within the stack. Understanding the different notification mechanisms within Stack Monitoring is crucial. Which TWO types of notifications are supported by OCI Stack Monitoring?",
+        "options": [
+          "Email notifications triggered by pre-defined alarm rules.",
+          "SMS notifications sent to registered mobile phone numbers.",
+          "Notifications sent to OCI Events Service, which can then trigger other actions such as sending notifications or invoking functions.",
+          "Webhooks that send alerts to external systems or services."
+        ],
+        "correct": [
+          1,
+          3
+        ]
+      },
+      {
+        "question": "Which type of visualization is typically useful for analyzing the distribution of values within a field in OCI Logging Analytics?",
+        "options": [
+          "(For example, examining the distribution of HTTP error codes.)",
+          "Cluster",
+          "Pie chart",
+          "Table",
+          "Tile (single number)"
+        ],
+        "correct": 2
+      },
+      {
+        "question": "When processing logs collected from OCI services in Logging Analytics, which factor determines the appropriate Parsers to be applied?",
+        "options": [
+          "The compartment where the logs are stored",
+          "The log group associated with the logs",
+          "The specific fields within the logs",
+          "The type of entity generating the logs"
+        ],
+        "correct": 4
+      },
+      {
+        "question": "What is the main function of the OCI Management Agent in Oracle Cloud Infrastructure (OCI)?",
+        "options": [
+          "Assess the cost and usage of OCI resources",
+          "Execute actions based on changes in the state of OCI resources",
+          "Enable centralized management by grouping resources",
+          "Collect data between OCI and external targets"
+        ],
+        "correct": 4
+      },
+      {
+        "question": "Your organization is adopting OCI Stack Monitoring to gain insights into the performance of its multi-tiered application. You need to understand the foundational elements that Stack Monitoring leverages to represent and analyze application components. Which TWO of the following are core concepts in OCI Stack Monitoring?",
+        "options": [
+          "Traces: Detailed records of individual requests as they traverse distributed systems.",
+          "Metrics: Numerical data points that provide measurements of resource utilization and performance over time.",
+          "Logs: Textual records of events and activities occurring within applications and infrastructure.",
+          "Topology: A visual representation of the relationships and dependencies between different components within a stack."
+        ],
+        "correct": [
+          2,
+          4
+        ]
+      },
+      {
+        "question": "While reviewing logs in the OCI Logging service, you need to extract structured details like Log Group OCID, Compartment OCID, and other metadatIn which format does OCI Logging provide this structured information?",
+        "options": [
+          "JSON",
+          "YAML",
+          "XML",
+          "Plain Text"
+        ],
+        "correct": 1
+      },
+      {
+        "question": "Your team is planning to use OCI Stack Monitoring for a complex application that spans multiple OCI services. Before implementing Stack Monitoring, you need to understand its fundamental capabilities regarding resource discovery and relationship mapping. Which TWO statements BEST describe the key capabilities of OCI Stack Monitoring regarding resource discovery and relationship mapping?",
+        "options": [
+          "Stack Monitoring automatically discovers and maps the relationships between OCI resources by analyzing configuration data and network traffic.",
+          "Stack Monitoring requires manual configuration of resource relationships by defining custom metadata tags on each resource.",
+          "Stack Monitoring can only discover resources that are explicitly defined within a pre-configured stack definition.",
+          "Stack Monitoring leverages built-in OCI service integrations to automatically infer relationships between resources based on their configuration and dependencies."
+        ],
+        "correct": [
+          1,
+          4
+        ]
+      },
+      {
+        "question": "As a cloud administrator managing a hybrid cloud setup, you need to monitor various resources. Which TWO of the following deployment models are supported by OCI Stack Monitoring?",
+        "options": [
+          "Resources hosted on OCI Compute instances",
+          "Resources deployed through a Management Gateway",
+          "Resources operating on a network appliance",
+          "Resources running in on-premises environments"
+        ],
+        "correct": [
+          1,
+          4
+        ]
+      },
+      {
+        "question": "Which TWO of the following options represent valid data sources from which the OCI APM Java Agent can gather spans and metric data?",
+        "options": [
+          "Nginx",
+          "VMware ESXi",
+          "Tomcat",
+          "Microsoft Hyper-V",
+          "WebLogic"
+        ],
+        "correct": [
+          3,
+          5
+        ]
+      },
+      {
+        "question": "In OCI Application Performance Monitoring (APM), what functionality does the Trace Explorer provide?",
+        "options": [
+          "Manage user access and permissions for APM domains",
+          "Examine details of individual spans",
+          "Create custom metrics based on trace data",
+          "Set up notifications for application performance thresholds"
+        ],
+        "correct": 2
+      }
+    ];
+
+    let currentQuestionIndex = -1;
+    let usedIndexes = [];
+    let totalQuestions = 0;
+    let correctAnswers = 0;
+    let wrongAnswers = 0;
+    let questionAnswered = false;
+    const maxQuestions = 25;
+
+    questions.forEach(q => {
+      if (Array.isArray(q.correct)) {
+        q.correct = q.correct.map(c => c - 1);
+      } else {
+        q.correct = q.correct - 1;
+      }
+    });
+
+    function updateScore() {
+      document.getElementById('score').innerHTML =
+        `Question ${totalQuestions} / ${maxQuestions} | <span class="correct">Correct: ${correctAnswers}</span> | <span class="incorrect">Incorrect: ${wrongAnswers}</span>`;
+      document.getElementById('progress-bar').style.width = `${(totalQuestions / maxQuestions) * 100}%`;
+    }
+
+    function getRandomUnusedIndex() {
+      if (usedIndexes.length >= questions.length) return null;
+      let index;
+      do {
+        index = Math.floor(Math.random() * questions.length);
+      } while (usedIndexes.includes(index));
+      usedIndexes.push(index);
+      return index;
+    }
+
+    function showFinalSummary() {
+      document.getElementById('question').textContent = '✅ Quiz complete!';
+      document.getElementById('options').innerHTML = '';
+      const percentage = ((correctAnswers / totalQuestions) * 100).toFixed(2);
+document.getElementById('feedback').innerHTML = `<strong>Final Score:</strong><br>✅ Correct: ${correctAnswers}<br>❌ Incorrect: ${wrongAnswers}<br>📊 Score Percentage: ${percentage}%`;
+      document.getElementById('nextBtn').disabled = true;
+    }
+
+    function nextQuestion() {
+      if (!questionAnswered && totalQuestions > 0) {
+        document.getElementById('feedback').textContent = '⚠️ Please check your answer before continuing.';
+        return;
+      }
+
+      if (totalQuestions >= maxQuestions) {
+        showFinalSummary();
+        return;
+      }
+
+      document.getElementById('question').textContent = '';
+      document.getElementById('options').innerHTML = '';
+      document.getElementById('feedback').textContent = '';
+
+      const index = getRandomUnusedIndex();
+      if (index === null) return;
+      currentQuestionIndex = index;
+      const originalQuestion = questions[currentQuestionIndex];
+
+      const originalOptions = originalQuestion.options.map((opt, idx) => ({ opt, idx }));
+      const shuffled = shuffleArray(originalOptions);
+      const correctIndices = Array.isArray(originalQuestion.correct) ? originalQuestion.correct : [originalQuestion.correct];
+      const newCorrect = shuffled
+        .map((item, idx) => correctIndices.includes(item.idx) ? idx : -1)
+        .filter(i => i !== -1);
+
+      questions[currentQuestionIndex].shuffledOptions = shuffled.map(item => item.opt);
+      questions[currentQuestionIndex].currentCorrect = Array.isArray(originalQuestion.correct) ? newCorrect : newCorrect[0];
+
+      document.getElementById('question').textContent = originalQuestion.question;
+
+      const isMultiple = Array.isArray(questions[currentQuestionIndex].currentCorrect);
+      const inputType = isMultiple ? 'checkbox' : 'radio';
+
+      questions[currentQuestionIndex].shuffledOptions.forEach((opt, idx) => {
+        const div = document.createElement('div');
+        div.classList.add('option');
+        div.innerHTML = `<input type="${inputType}" name="option" value="${idx}" id="opt${idx}" /> <label for="opt${idx}" id="label${idx}">${opt}</label>`;
+        document.getElementById('options').appendChild(div);
+      });
+
+      questionAnswered = false;
+      totalQuestions++;
+      updateScore();
+    }
+
+    function checkAnswer() {
+      const currentQuestion = questions[currentQuestionIndex];
+      const correctArray = Array.isArray(currentQuestion.currentCorrect) ? currentQuestion.currentCorrect : [currentQuestion.currentCorrect];
+      const selected = Array.from(document.querySelectorAll('input[name="option"]:checked')).map(el => parseInt(el.value));
+      const allInputs = document.querySelectorAll('input[name="option"]');
+
+      if (selected.length === 0) {
+        document.getElementById('feedback').textContent = '⚠️ Please select at least one option.';
+        return;
+      }
+
+      const isCorrect = selected.length === correctArray.length &&
+                        selected.sort().join() === correctArray.sort().join();
+
+      allInputs.forEach((el, idx) => {
+        const label = document.getElementById(`label${idx}`);
+        el.disabled = true;
+        if (correctArray.includes(idx)) {
+          label.classList.add('correct');
+        } else if (selected.includes(idx) && !correctArray.includes(idx)) {
+          label.classList.add('incorrect');
+        }
+      });
+
+      document.getElementById('feedback').textContent = isCorrect ? '✅ Correct!' : '❌ Incorrect.';
+
+      if (isCorrect) correctAnswers++;
+      else wrongAnswers++;
+
+      questionAnswered = true;
+      updateScore();
+    }
+
+    nextQuestion();
+  </script>
+</body>
+</html>
