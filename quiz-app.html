@@ -8,7 +8,7 @@
   <style>
     body {
       font-family: 'Inter', sans-serif;
-      background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+      background: linear-gradient(135deg, #BDE3F2, #4EB1D9);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -19,7 +19,7 @@
       background: #ffffff;
       padding: 40px;
       border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 10px 30px rgba(70, 120, 140, 0.2);
       width: 90%;
       max-width: 800px;
       text-align: left;
@@ -28,11 +28,11 @@
       text-align: center;
       margin-bottom: 20px;
       font-size: 2rem;
-      color: #333;
+      color: #ffffff;
     }
     #progress-bar {
       height: 8px;
-      background: #00b894;
+      background: #F2B33D;
       border-radius: 5px;
       margin-bottom: 1rem;
       width: 0%;
@@ -42,17 +42,17 @@
       text-align: center;
       font-size: 1rem;
       margin-bottom: 20px;
-      background: #f8f9fa;
+      background: #BDE3F2;
       padding: 12px;
       border-radius: 10px;
-      border: 1px solid #dee2e6;
+      border: 1px solid #46788C;
     }
     #score span.correct {
-      color: green;
+      color: #2e7d32; /* dark desaturated green */
       font-weight: bold;
     }
     #score span.incorrect {
-      color: red;
+      color: #c0392b; /* elegant dark red */
       font-weight: bold;
     }
     .question {
@@ -65,12 +65,10 @@
       font-size: 1.1rem;
     }
     .correct {
-      background-color: #e6ffe6;
       color: green;
       font-weight: bold;
     }
     .incorrect {
-      background-color: #ffe6e6;
       color: red;
       font-weight: bold;
     }
@@ -91,13 +89,13 @@
       cursor: pointer;
       border: none;
       border-radius: 8px;
-      background-color: #0984e3;
+      background-color: #F2A03D;
       color: white;
       transition: all 0.3s ease;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 12px rgba(70, 120, 140, 0.1);
     }
     button:hover {
-      background-color: #74b9ff;
+      background-color: #F2B33D;
       transform: translateY(-1px);
     }
       @media (prefers-color-scheme: dark) {
@@ -105,6 +103,14 @@
         background: linear-gradient(135deg, #2c3e50, #4ca1af);
         color: #ecf0f1;
       }
+      button {
+        background-color: #F2A03D;
+        color: #fff;
+      }
+      button:hover {
+        background-color: #F2B33D;
+      }
+    }
       #quiz-container {
         background: #1e272e;
         color: #ecf0f1;
@@ -112,13 +118,6 @@
       #score {
         background: #2f3640;
         border-color: #57606f;
-      }
-      button {
-        background-color: #3498db;
-        color: #fff;
-      }
-      button:hover {
-        background-color: #2980b9;
       }
     }
 
@@ -2112,6 +2111,8 @@ document.getElementById('feedback').innerHTML = `<strong>Final Score:</strong><b
       const isCorrect = selected.length === correctArray.length &&
                         selected.sort().join() === correctArray.sort().join();
 
+      if (questionAnswered) return;
+
       allInputs.forEach((el, idx) => {
         const label = document.getElementById(`label${idx}`);
         el.disabled = true;
@@ -2124,8 +2125,10 @@ document.getElementById('feedback').innerHTML = `<strong>Final Score:</strong><b
 
       document.getElementById('feedback').textContent = isCorrect ? '✅ Correct!' : '❌ Incorrect.';
 
-      if (isCorrect) correctAnswers++;
-      else wrongAnswers++;
+      if (!questionAnswered) {
+        if (isCorrect) correctAnswers++;
+        else wrongAnswers++;
+      }
 
       questionAnswered = true;
       updateScore();
